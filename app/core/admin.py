@@ -15,7 +15,8 @@ class UserAdmin(BaseUserAdmin):
     ordering = ["id"]
     list_display = ["email", "first_name", "last_name"]
     fieldsets = (
-        (_("Core"), {"fields": ("email", "password")}),
+        (None, {"fields": ("email", "password")}),
+        (_("Personal Info"), {"fields": ("first_name", "last_name")}),
         (
             _("Permissions"),
             {
@@ -26,9 +27,27 @@ class UserAdmin(BaseUserAdmin):
                 )
             },
         ),
-        (None, {"fields": ("last_login",)}),
+        (_("Important dates"), {"fields": ("last_login",)}),
     )
     readonly_fields = ["last_login"]
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "password1",
+                    "password2",
+                    "first_name",
+                    "last_name",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                ),
+            },
+        ),
+    )
 
 
 admin.site.register(models.User, UserAdmin)
