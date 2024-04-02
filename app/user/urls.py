@@ -25,4 +25,5 @@ urlpatterns = [
         TokenRefreshView.as_view(),
         name="token-refresh",
     ),
+    path("api/me/", views.ManageUserView.as_view(), name="me"),
 ]
