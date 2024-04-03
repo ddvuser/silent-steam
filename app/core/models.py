@@ -2,6 +2,7 @@
 Database models.
 """
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -45,3 +46,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "email"
+
+
+class Teacher(models.Model):
+    """Represents a teacher."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    degree = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
+
+class Course(models.Model):
+    """Represents a course offered to a student."""
+
+    author = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
