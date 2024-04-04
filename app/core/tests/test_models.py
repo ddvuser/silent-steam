@@ -2,6 +2,7 @@
 Tests for models.
 """
 
+from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -84,3 +85,24 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(course), course.name)
+
+    def test_create_student(self):
+        """Test creating a student."""
+        user = get_user_model().objects.create_user(
+            email="test@example.com",
+            password="testpass123",
+            first_name="First",
+            last_name="Last",
+        )
+
+        test_gpa = Decimal("2.9")
+        student_with_gpa = models.Student.objects.create(
+            user=user,
+            gpa=test_gpa,
+        )
+
+        self.assertEqual(str(student_with_gpa), str(student_with_gpa.id))
+        self.assertEqual(test_gpa, student_with_gpa.gpa)
+
+        student_no_gpa = models.Student.objects.create(user=user, gpa=None)
+        self.assertIsNone(student_no_gpa.gpa)
