@@ -48,6 +48,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
 
 
+class Student(models.Model):
+    """Represents a student."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    gpa = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+    )
+
+    def __str__(self):
+        return str(self.id)
+
+
 class Teacher(models.Model):
     """Represents a teacher."""
 
