@@ -203,3 +203,51 @@ class ModelTests(TestCase):
         self.assertIsNotNone(submission)
 
         os.remove(file_path)
+
+    def test_create_grade(self):
+        """Test creating a grade for a submission."""
+
+        """Test creating a submission for an assignment."""
+        user = create_user()
+        user3 = create_user(email="teacher@example.com")
+
+        student = models.Student.objects.create(user=user, gpa=None)
+        teacher = models.Teacher.objects.create(user=user3, degree="Test")
+
+        course1 = models.Course.objects.create(
+            author=teacher,
+            name="Math",
+            description="Test Math",
+        )
+
+        class1 = models.Class.objects.create(
+            course=course1,
+            teacher=teacher,
+            start_date="2024-01-01",
+            end_date="2024-06-01",
+        )
+
+        assignment = models.Assignment.objects.create(
+            class_assigned=class1,
+            title="Task1",
+            description="Task1 Desc",
+            due_date="2024-02-01",
+        )
+
+        file_path = "test_submission.txt"
+
+        with open(file_path, "w") as file:  # NOQA
+            pass
+
+        submission = models.Submission.objects.create(
+            assignment=assignment, student=student, file=file_path
+        )
+
+        grade = models.Grade.objects.create(
+            submission=submission,
+            grade=2.9,
+        )
+
+        self.assertEqual(grade.grade, 2.9)
+
+        os.remove(file_path)
