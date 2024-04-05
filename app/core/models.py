@@ -113,3 +113,12 @@ class Class(models.Model):
 
     def __str__(self):
         return f"Class {self.id}"
+
+
+class Assignment(models.Model):
+    """Represents an assignment."""
+
+    class_assigned = models.ForeignKey(Class, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    due_date = models.DateField()
