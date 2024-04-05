@@ -9,15 +9,27 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def create_user(
+    email="test@example.com",
+    password="testpass123",
+    first_name="First",
+    last_name="Last",
+):
+    user = get_user_model().objects.create_user(
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+    )
+    return user
+
+
 class ModelTests(TestCase):
     def test_create_user_with_email_success(self):
         """Test creating a user with an email is success."""
-        email = "test@example.com"
+        email = "user@example.com"
         password = "testpass123"
-        user = get_user_model().objects.create_user(
-            email=email,
-            password=password,
-        )
+        user = create_user(email=email, password=password)
 
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
@@ -52,12 +64,7 @@ class ModelTests(TestCase):
 
     def test_create_teacher(self):
         """test creating a teacher."""
-        user = get_user_model().objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            first_name="First",
-            last_name="Last",
-        )
+        user = create_user()
 
         teacher = models.Teacher.objects.create(
             user=user,
@@ -68,12 +75,7 @@ class ModelTests(TestCase):
 
     def test_create_course(self):
         """Test creating a course."""
-        user = get_user_model().objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            first_name="First",
-            last_name="Last",
-        )
+        user = create_user()
 
         teacher = models.Teacher.objects.create(
             user=user,
@@ -88,12 +90,7 @@ class ModelTests(TestCase):
 
     def test_create_student(self):
         """Test creating a student."""
-        user = get_user_model().objects.create_user(
-            email="test@example.com",
-            password="testpass123",
-            first_name="First",
-            last_name="Last",
-        )
+        user = create_user()
 
         test_gpa = Decimal("2.9")
         student_with_gpa = models.Student.objects.create(
@@ -106,3 +103,33 @@ class ModelTests(TestCase):
 
         student_no_gpa = models.Student.objects.create(user=user, gpa=None)
         self.assertIsNone(student_no_gpa.gpa)
+
+    def test_create_class(self):
+        """Test creating a class for students."""
+        user1 = create_user()
+        user2 = create_user(email="user2@example.com")
+        user3 = create_user(email="teacher@example.com")
+
+        student1 = models.Student.objects.create(user=user1, gpa=None)
+        student2 = models.Student.objects.create(user=user2, gpa=None)
+
+        teacher = models.Teacher.objects.create(user=user3, degree="Test")
+
+        course1 = models.Course.objects.create(
+            author=teacher,
+            name="Math",
+            description="Test Math",
+        )
+
+        class1 = models.Class.objects.create(
+            course=course1,
+            teacher=teacher,
+            start_date="2024-01-01",
+            end_date="2024-06-01",
+        )
+
+        class1.students.add(student1, student2)
+
+        self.assertEqual(class1.students.count(), 2)
+        self.assertEqual(str(class1), "Class 1")
+        self.assertIn(student1, class1.students.filter())
