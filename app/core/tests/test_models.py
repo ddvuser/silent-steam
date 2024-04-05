@@ -131,5 +131,33 @@ class ModelTests(TestCase):
         class1.students.add(student1, student2)
 
         self.assertEqual(class1.students.count(), 2)
-        self.assertEqual(str(class1), "Class 1")
+        self.assertEqual(str(class1), f"Class {class1.id}")
         self.assertIn(student1, class1.students.filter())
+
+    def test_create_assignment(self):
+        """Test creating an assignment for class."""
+
+        user3 = create_user(email="teacher@example.com")
+        teacher = models.Teacher.objects.create(user=user3, degree="Test")
+
+        course1 = models.Course.objects.create(
+            author=teacher,
+            name="Math",
+            description="Test Math",
+        )
+
+        class1 = models.Class.objects.create(
+            course=course1,
+            teacher=teacher,
+            start_date="2024-01-01",
+            end_date="2024-06-01",
+        )
+
+        assignment = models.Assignment.objects.create(
+            class_assigned=class1,
+            title="Task1",
+            description="Task1 Desc",
+            due_date="2024-02-01",
+        )
+
+        self.assertEqual(assignment.class_assigned.course.name, course1.name)
