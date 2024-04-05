@@ -89,3 +89,27 @@ class Course(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Class(models.Model):
+    """Represents a class."""
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+    )
+    teacher = models.ForeignKey(
+        Teacher,
+        on_delete=models.CASCADE,
+        related_name="classes_taught",
+    )
+    students = models.ManyToManyField(
+        Student,
+        related_name="classes_enrolled",
+    )
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"Class {self.id}"
