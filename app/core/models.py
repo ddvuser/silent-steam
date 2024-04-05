@@ -125,9 +125,16 @@ class Assignment(models.Model):
 
 
 class Submission(models.Model):
-    """Represents a submission of an assignment by a studnent."""
+    """Represents a submission of an assignment by a student."""
 
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     submitted_date = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to="submissions/")
+
+
+class Grade(models.Model):
+    """Represents a grade given to a submission."""
+
+    submission = models.OneToOneField(Submission, on_delete=models.CASCADE)
+    grade = models.FloatField()
