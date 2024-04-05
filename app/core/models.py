@@ -122,3 +122,12 @@ class Assignment(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     due_date = models.DateField()
+
+
+class Submission(models.Model):
+    """Represents a submission of an assignment by a studnent."""
+
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    submitted_date = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(upload_to="submissions/")
