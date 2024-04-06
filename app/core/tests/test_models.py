@@ -208,7 +208,6 @@ class ModelTests(TestCase):
     def test_create_grade(self):
         """Test creating a grade for a submission."""
 
-        """Test creating a submission for an assignment."""
         user = create_user()
         user3 = create_user(email="teacher@example.com")
 
