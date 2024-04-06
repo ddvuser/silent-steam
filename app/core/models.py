@@ -72,7 +72,7 @@ class Teacher(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    degree = models.CharField(max_length=255)
+    degree = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
