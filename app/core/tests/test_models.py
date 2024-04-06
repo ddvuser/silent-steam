@@ -3,6 +3,7 @@ Tests for models.
 """
 
 import os
+import tempfile
 from decimal import Decimal
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -193,8 +194,8 @@ class ModelTests(TestCase):
 
         file_path = "test_submission.txt"
 
-        with open(file_path, "w") as file:  # NOQA
-            pass
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:  # NOQA
+            file_path = temp_file.name
 
         submission = models.Submission.objects.create(
             assignment=assignment, student=student, file=file_path
@@ -236,8 +237,8 @@ class ModelTests(TestCase):
 
         file_path = "test_submission.txt"
 
-        with open(file_path, "w") as file:  # NOQA
-            pass
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:  # NOQA
+            file_path = temp_file.name
 
         submission = models.Submission.objects.create(
             assignment=assignment, student=student, file=file_path
