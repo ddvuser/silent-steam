@@ -11,19 +11,16 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
-def create_user(
-    email="test@example.com",
-    password="testpass123",
-    first_name="First",
-    last_name="Last",
-):
-    user = get_user_model().objects.create_user(
-        email=email,
-        password=password,
-        first_name=first_name,
-        last_name=last_name,
-    )
-    return user
+def create_user(**params):
+    """Create and return user."""
+    defaults = {
+        "email": "user@example.com",
+        "password": "testpass123",
+        "first_name": "First",
+        "last_name": "Last",
+    }
+    defaults.update(**params)
+    return get_user_model().objects.create_user(**defaults)
 
 
 class ModelTests(TestCase):
@@ -31,7 +28,11 @@ class ModelTests(TestCase):
         """Test creating a user with an email is success."""
         email = "user@example.com"
         password = "testpass123"
-        user = create_user(email=email, password=password)
+        payload = {
+            "email": "user@example.com",
+            "password": "testpass123",
+        }
+        user = create_user(**payload)
 
         self.assertEqual(user.email, email)
         self.assertTrue(user.check_password(password))
@@ -108,9 +109,12 @@ class ModelTests(TestCase):
 
     def test_create_class(self):
         """Test creating a class for students."""
-        user1 = create_user()
-        user2 = create_user(email="user2@example.com")
-        user3 = create_user(email="teacher@example.com")
+        # Students
+        user1 = create_user(**{"email": "user1@example.com"})
+        user2 = create_user(**{"email": "user2@example.com"})
+
+        # Teacher
+        user3 = create_user(**{"email": "user3@example.com"})
 
         student1 = models.Student.objects.create(user=user1, gpa=None)
         student2 = models.Student.objects.create(user=user2, gpa=None)
