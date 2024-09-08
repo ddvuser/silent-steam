@@ -41,6 +41,12 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
+    def put(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "PUT method not allowed for this endpoint."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
     def get_object(self):
         """Retrieve and return the authenticated user."""
         return self.request.user
