@@ -101,10 +101,12 @@ class ModelTests(TestCase):
             gpa=test_gpa,
         )
 
+        user2 = create_user(**{"email": "user2@example.com"})
+
         self.assertEqual(str(student_with_gpa), str(student_with_gpa.id))
         self.assertEqual(test_gpa, student_with_gpa.gpa)
 
-        student_no_gpa = models.Student.objects.create(user=user, gpa=None)
+        student_no_gpa = models.Student.objects.create(user=user2, gpa=None)
         self.assertIsNone(student_no_gpa.gpa)
 
     def test_create_class(self):

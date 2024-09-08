@@ -34,9 +34,6 @@ class UserManager(BaseUserManager):
         return user
 
 
-ROLE_CHOICES = [("student", "Student"), ("teacher", "Teacher")]
-
-
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
@@ -45,7 +42,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES, null=True)
 
     objects = UserManager()
 
