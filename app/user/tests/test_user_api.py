@@ -31,6 +31,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             "email": "test@example.com",
             "password": "testpass123",
+            "password_confirmation": "testpass123",
             "first_name": "First",
             "last_name": "Last",
             "is_student": True,
@@ -47,6 +48,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             "email": "test@example.com",
             "password": "test123",
+            "password_confirmation": "test123",
             "first_name": "First",
             "last_name": "Last",
             "is_student": True,
@@ -72,6 +74,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             "email": "test@example.com",
             "password": "testpass123",
+            "password_confirmation": "testpass123",
             "first_name": "First",
             "last_name": "Last",
         }
@@ -225,7 +228,7 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_patch_user_password_fails(self):
-        """Test attempt to patch user password fails on wrong current password."""
+        """Test attempt to patch user password fails."""
         payload = {
             "current_password": "wrong_pass",
             "new_password": "123testpass",
