@@ -51,6 +51,10 @@ class UserSerializer(serializers.ModelSerializer):
         if self.context["request"].method == "POST":
             password = attrs.get("password")
             password_confirmation = attrs.get("password_confirmation")
+            if not password_confirmation:
+                raise serializers.ValidationError(
+                    {"password_confirmation": "You must provide password confirmation."}
+                )
 
             if password != password_confirmation:
                 raise serializers.ValidationError({"password": "Passwords must match."})
@@ -97,6 +101,7 @@ class UserSerializer(serializers.ModelSerializer):
         is_student = validated_data.pop("is_student", False)
 
         # Create user
+        validated_data.pop("password_confirmation")
         password = validated_data.pop("password")
         user = get_user_model().objects.create_user(password=password, **validated_data)
 
