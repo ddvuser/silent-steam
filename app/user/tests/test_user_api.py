@@ -12,6 +12,7 @@ from rest_framework import status
 CREATE_USER_URL = reverse("user:create")
 JWT_TOKEN_URL = reverse("user:obtain-token-pair")
 JWT_TOKEN_REFRESH_URL = reverse("user:token-refresh")
+RETRIEVE_UPDATE_USER_URL = reverse("user:me")
 
 
 def create_user(**params):
@@ -162,3 +163,79 @@ class PublicUserApiTests(TestCase):
             refresh_res.data["access"],
         )
         self.assertEqual(refresh_res.status_code, status.HTTP_200_OK)
+
+
+class PrivateUserApiTests(TestCase):
+    """Test private features of the user API."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_user(
+            email="test@example.com",
+            password="testpass123",
+            first_name="Test",
+            last_name="User",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_user_info(self):
+        """Test retrieving authenticated user's information."""
+        self.client.logout()
+        payload = {
+            "email": self.user.email,
+            "password": "testpass123",
+        }
+
+        # Obtain JWT token
+        token_res = self.client.post(JWT_TOKEN_URL, payload)
+        self.assertEqual(token_res.status_code, status.HTTP_200_OK)
+        token = token_res.data["access"]
+
+        # Add JWT header
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+        # Retrieve user's data
+        res = self.client.get(RETRIEVE_UPDATE_USER_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        # Validate response contains expected data
+        self.assertEqual(res.data["email"], self.user.email)
+        self.assertEqual(res.data["first_name"], self.user.first_name)
+        self.assertEqual(res.data["last_name"], self.user.last_name)
+        self.assertNotIn("password", res.data)
+        self.assertIn("is_teacher", res.data)
+        self.assertIn("is_student", res.data)
+
+    def test_retrieve_logged_out_user_info(self):
+        """Test retrieving unauthenticated user's information."""
+        self.client.logout()
+
+        res = self.client.get(RETRIEVE_UPDATE_USER_URL)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_user_password(self):
+        """Test patching user password succeeds"""
+        payload = {
+            "current_password": "testpass123",
+            "new_password": "123testpass",
+            "new_password_confirmation": "123testpass",
+        }
+        res = self.client.patch(RETRIEVE_UPDATE_USER_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_patch_user_password_fails(self):
+        """Test attempt to patch user password fails on wrong current password."""
+        payload = {
+            "current_password": "wrong_pass",
+            "new_password": "123testpass",
+            "new_password_confirmation": "123testpass",
+        }
+        res = self.client.patch(RETRIEVE_UPDATE_USER_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_user_info_not_allowed(self):
+        """Test put request method is not allowed."""
+        payload = {}
+        res = self.client.put(RETRIEVE_UPDATE_USER_URL, payload)
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
