@@ -41,6 +41,7 @@ class UserAdmin(BaseUserAdmin):
                     "password2",
                     "first_name",
                     "last_name",
+                    "role",
                     "is_active",
                     "is_staff",
                     "is_superuser",
@@ -52,4 +53,9 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Teacher)
+admin.site.register(models.Student)
 admin.site.register(models.Course)
+admin.site.register(models.Class)
+admin.site.register(models.Assignment)
+admin.site.register(models.Submission)
+admin.site.register(models.Grade)
