@@ -34,6 +34,9 @@ class UserManager(BaseUserManager):
         return user
 
 
+ROLE_CHOICES = [("student", "Student"), ("teacher", "Teacher")]
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """User in the system."""
 
@@ -42,6 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, null=True)
 
     objects = UserManager()
 
@@ -51,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Student(models.Model):
     """Represents a student."""
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
@@ -68,7 +72,7 @@ class Student(models.Model):
 class Teacher(models.Model):
     """Represents a teacher."""
 
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
@@ -92,7 +96,10 @@ class Course(models.Model):
 
 
 class Class(models.Model):
-    """Represents a class."""
+    """Represents a class of students."""
+
+    class Meta:
+        verbose_name_plural = "Classes"
 
     course = models.ForeignKey(
         Course,
