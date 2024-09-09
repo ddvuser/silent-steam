@@ -31,3 +31,10 @@ class CourseViewSet(viewsets.ModelViewSet):
                 Access denied: Only teachers can access this view.\
                 "
             )
+
+    def perform_create(self, serializer):
+        try:
+            teacher = Teacher.objects.get(user=self.request.user)
+            serializer.save(author=teacher)
+        except Teacher.DoesNotExist:
+            raise PermissionDenied("You must be a teacher to create a course.")
