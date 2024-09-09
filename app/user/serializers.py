@@ -123,7 +123,7 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Update the user and set the new password, if provided."""
 
-        current_password = validated_data.pop("current_password", None)  # noqa
+        validated_data.pop("current_password", None)
         new_password = validated_data.pop("new_password", None)
         validated_data.pop("new_password_confirmation", None)
 
@@ -136,3 +136,20 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
 
         return user
+
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.RegexField(
+        regex=r"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+        write_only=True,
+        error_messages={
+            "invalid": (
+                "Password must be at least 8 characters long with at least one capital letter and symbol"
+            )
+        },
+    )
+    confirm_password = serializers.CharField(write_only=True, required=True)

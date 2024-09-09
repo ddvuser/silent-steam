@@ -26,4 +26,14 @@ urlpatterns = [
         name="token-refresh",
     ),
     path("me/", views.ManageUserView.as_view(), name="me"),
+    path(
+        "request-password-reset/",
+        views.RequestPasswordReset.as_view(),
+        name="request-pass-reset",
+    ),
+    path(
+        "reset-password/<str:token>/",
+        views.ResetPassword.as_view(),
+        name="reset-pass",
+    ),
 ]
