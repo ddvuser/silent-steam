@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "changeme"
@@ -11,8 +10,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+APP_URL = "http://127.0.0.1:8000/"
 
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -59,8 +58,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "app.wsgi.application"
 
 
-# Database
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -71,7 +68,6 @@ DATABASES = {
     }
 }
 
-# Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -88,7 +84,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
 
 LANGUAGE_CODE = "en-us"
 
@@ -98,12 +93,11 @@ USE_I18N = True
 
 USE_TZ = True
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# Static files (CSS, JavaScript, Images)
 
 STATIC_URL = "static/"
 
-# Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
