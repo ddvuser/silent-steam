@@ -79,14 +79,14 @@ class TeacherCourseAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
 
-    def test_courses_list_limited_to_teacher(self):
-        """Test retrieving courses is limited to authenticated teacher."""
+    def test_all_courses_is_visible_to_teacher(self):
+        """Test all courses is visible when retrieving."""
 
         other_user = create_user(email="user2@example.com")
         other_teacher = create_teacher(user=other_user)
 
         create_course(author=other_teacher)
-        create_course(author=other_teacher)
+        create_course(author=other_teacher, **{"name": "Course Bar"})
 
         res = self.client.get(COURSES_URL)
 
@@ -94,11 +94,11 @@ class TeacherCourseAPITests(TestCase):
         serializer = CourseSerializer(courses, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, serializer.data)
-        self.assertNotEqual(
+        self.assertNotEqual(res.data, serializer.data)
+        self.assertEqual(
             res.data,
             CourseSerializer(
-                Course.objects.all(),
+                Course.objects.all().order_by("-id"),
                 many=True,
             ).data,
         )
@@ -139,7 +139,7 @@ class TeacherCourseAPITests(TestCase):
         url = reverse("course:course-detail", args=[course.id])
         res = self.client.delete(url)
 
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Course.objects.filter(id=course.id).exists())
 
     def test_student_cannot_create_course(self):

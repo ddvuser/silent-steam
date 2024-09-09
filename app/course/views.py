@@ -20,17 +20,27 @@ class CourseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Retrieve courses created by authenticated teacher."""
+        """Retrieve all courses"""
         try:
-            teacher = Teacher.objects.get(user=self.request.user)
-            return self.queryset.filter(author=teacher).order_by("-id")
+            Teacher.objects.get(user=self.request.user)
+            return self.queryset.order_by("-id")
         except Teacher.DoesNotExist:
-            # If user is a student, raise permission denied
             raise PermissionDenied(
                 "\
                 Access denied: Only teachers can access this view.\
                 "
             )
+
+    def get_object(self):
+        """Retrieve and return the course, ensuring only the author can update or delete."""
+        obj = super().get_object()
+        teacher = Teacher.objects.get(user=self.request.user)
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            if obj.author != teacher:
+                raise PermissionDenied(
+                    "You can only update or delete your own courses."
+                )
+        return obj
 
     def perform_create(self, serializer):
         try:
