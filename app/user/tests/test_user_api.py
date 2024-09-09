@@ -8,11 +8,14 @@ from django.urls import reverse
 
 from rest_framework.test import APIClient
 from rest_framework import status
+from core import models
+from django.utils import timezone
 
 CREATE_USER_URL = reverse("user:create")
 JWT_TOKEN_URL = reverse("user:obtain-token-pair")
 JWT_TOKEN_REFRESH_URL = reverse("user:token-refresh")
 RETRIEVE_UPDATE_USER_URL = reverse("user:me")
+REQUEST_PASSWORD_RESET_URL = reverse("user:request-pass-reset")
 
 
 def create_user(**params):
@@ -166,6 +169,55 @@ class PublicUserApiTests(TestCase):
             refresh_res.data["access"],
         )
         self.assertEqual(refresh_res.status_code, status.HTTP_200_OK)
+
+    def test_request_password_reset(self):
+        """Test requesting password reset succeeds."""
+        payload = {
+            "email": "test@example.com",
+        }
+        create_user(email=payload["email"], password="testpass123")
+
+        res = self.client.post(REQUEST_PASSWORD_RESET_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        # check if password reset entry is created
+        reset_obj = models.PasswordReset.objects.filter(email=payload["email"]).first()
+        self.assertIsNotNone(reset_obj)
+        # ensure expiration date set correctly
+        self.assertTrue(reset_obj.expires > timezone.now())
+
+    def test_reset_password(self):
+        """Test resetting password after requesting it."""
+        payload = {
+            "email": "test@example.com",
+        }
+        user = create_user(email=payload["email"], password="testpass123")
+
+        # send a request to reset
+        self.client.post(REQUEST_PASSWORD_RESET_URL, payload)
+
+        # get created password reset obj
+        reset_obj = models.PasswordReset.objects.filter(email=payload["email"]).first()
+
+        reset_payload = {
+            "new_password": "Newpass123@",
+            "confirm_password": "Newpass123@",
+        }
+
+        reset_url = reverse("user:reset-pass", kwargs={"token": reset_obj.token})
+        res = self.client.post(reset_url, reset_payload)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        # fetch user again and check if password is updated
+        user.refresh_from_db()
+        self.assertTrue(user.check_password(reset_payload["new_password"]))
+
+        # check if reset_obj is deleted after reset
+        self.assertFalse(
+            models.PasswordReset.objects.filter(token=reset_obj.token).exists()
+        )
 
 
 class PrivateUserApiTests(TestCase):
