@@ -141,3 +141,10 @@ class Grade(models.Model):
 
     submission = models.OneToOneField(Submission, on_delete=models.CASCADE)
     grade = models.FloatField()
+
+
+class PasswordReset(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires = models.DateTimeField()
