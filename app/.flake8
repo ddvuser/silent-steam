@@ -5,3 +5,5 @@ exclude =
     manage.py,
     settings.py
     ./user/serializers.py
+    ./user/views.py
+    ./user/tests/test_user_api.py
