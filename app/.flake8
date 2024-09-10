@@ -1,9 +1,7 @@
 [flake8]
+ignore = E501
 exclude =
     migrations,
     __pycache__,
     manage.py,
     settings.py
-    ./user/serializers.py
-    ./user/views.py
-    ./user/tests/test_user_api.py
