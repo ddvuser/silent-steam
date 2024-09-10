@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "user",
     "course",
     "classroom",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
