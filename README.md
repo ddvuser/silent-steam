@@ -98,6 +98,10 @@ The User API is accessible to everyone, allowing users to create accounts and ma
 
 - Token Authentication: application uses JWT (JSON Web Tokens) for authentication. Obtain a token by posting to `/api/user/token/` and include the token in the Authorization header as `Bearer <token>` for authenticated requests.
 
+## ER Diagram
+
+![erDiagram](erDiagram.png)
+
 ## Tech Stack
 
 - Django
