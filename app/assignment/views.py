@@ -54,6 +54,33 @@ class SubmissionViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        """Allow students to view only their own submissions, and teachers to view submissions for their own classes."""
+        user = self.request.user
+
+        if hasattr(user, "student"):
+            # Students can only view their own submissions
+            return Submission.objects.filter(student=user.student)
+
+        if hasattr(user, "teacher"):
+            # Teachers can view submissions related to assignments in their classes
+            teacher_classes = Class.objects.filter(teacher=user.teacher)
+            assignments = Assignment.objects.filter(class_assigned__in=teacher_classes)
+            return Submission.objects.filter(assignment__in=assignments)
+
+        # Raise an error if the user is neither a student nor a teacher
+        raise PermissionDenied("Invalid user type")
+
+    def get_object(self):
+        """Retrieve an object and ensure students can only access their own submissions."""
+        obj = super().get_object()
+        user = self.request.user
+        if hasattr(user, "student") and obj.student != user.student:
+            raise PermissionDenied(
+                "You do not have permission to access this submission."
+            )
+        return obj
+
     def perform_create(self, serializer):
         """Ensure only students can create submissions."""
         if not hasattr(self.request.user, "student"):
