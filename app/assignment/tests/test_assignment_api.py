@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+import tempfile
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -67,11 +68,17 @@ def create_assignment(class_assigned, **params):
 
 def create_submission(assignment, student, **params):
     """Create and return a sample submission."""
-    defaults = {
-        "file": "dummyfile.txt",
-    }
-    defaults.update(**params)
-    return Submission.objects.create(assignment=assignment, student=student, **defaults)
+    with tempfile.TemporaryDirectory():
+        file = SimpleUploadedFile(
+            "testfile.txt", b"file content", content_type="text/plain"
+        )
+        defaults = {
+            "file": file,
+        }
+        defaults.update(**params)
+        return Submission.objects.create(
+            assignment=assignment, student=student, **defaults
+        )
 
 
 def create_grade(submission, **params):
@@ -152,44 +159,56 @@ class StudentSubmissionAPITests(TestCase):
         """Ensure student can create a submission for the assignment to the class he enrolled."""
         # Enroll student to the class
         self.classroom.students.add(self.student.id)
-        payload = {
-            "assignment": self.assignment.id,
-            "file": SimpleUploadedFile("dummyfile.txt", b"file_content"),
-            "student": self.student.id,
-            "description": "Foo",
-            "due_date": "2024-12-31",
-        }
-        res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Submission.objects.count(), 1)
+        with tempfile.TemporaryDirectory():
+            file = SimpleUploadedFile(
+                "testfile.txt", b"file content", content_type="text/plain"
+            )
+            payload = {
+                "assignment": self.assignment.id,
+                "file": file,
+                "student": self.student.id,
+                "description": "Foo",
+                "due_date": "2024-12-31",
+            }
+            res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
+            self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(Submission.objects.count(), 1)
 
     def test_create_submission_not_enrolled(self):
         """Ensure student cannot submit if not enrolled in the class."""
         other_student = create_student(
             user=create_user(email="other_student@example.com")
         )
-        payload = {
-            "assignment": self.assignment.id,
-            "student": other_student.id,
-            "file": SimpleUploadedFile("dummyfile.txt", b"file_content"),
-            "description": "Foo",
-            "due_date": "2024-12-31",
-        }
-        res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+        with tempfile.TemporaryDirectory():
+            file = SimpleUploadedFile(
+                "testfile.txt", b"file content", content_type="text/plain"
+            )
+            payload = {
+                "assignment": self.assignment.id,
+                "student": other_student.id,
+                "file": file,
+                "description": "Foo",
+                "due_date": "2024-12-31",
+            }
+            res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
+            self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_student_cannot_create_submission_for_own_assignments(self):
         """Ensure student cannot create a submission for their own assignments."""
-        self.client.login(username="teacher", password="testpass123")
-        payload = {
-            "assignment": self.assignment.id,
-            "file": SimpleUploadedFile("dummyfile.txt", b"file_content"),
-            "student": self.student.id,
-            "description": "Foo",
-            "due_date": "2024-12-30",
-        }
-        res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        with tempfile.TemporaryDirectory():
+            file = SimpleUploadedFile(
+                "testfile.txt", b"file content", content_type="text/plain"
+            )
+            payload = {
+                "assignment": self.assignment.id,
+                "file": file,
+                "student": self.student.id,
+                "description": "Foo",
+                "due_date": "2024-12-30",
+            }
+            res = self.client.post(SUBMISSIONS_URL, payload, format="multipart")
+            self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class TeacherGradeAPITests(TestCase):
